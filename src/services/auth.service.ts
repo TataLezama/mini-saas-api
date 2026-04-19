@@ -34,7 +34,7 @@ export class AuthService {
             });
 
             // Email de validación
-            // this.sendEmailWithValidationLink(user.id, user.email);
+            this.sendEmailWithValidationLink(user.id, user.email);
 
             const { password, ...userEntity } = UserEntity.fromObject(user);
 
