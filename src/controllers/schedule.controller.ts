@@ -34,7 +34,7 @@ export class ScheduleController {
 
     getShcedule = (req: Request, res: Response) => {
         const { id } = req.params;
-        if ( !Validators.isMongoID(id) ) return res.status(400).json({ error: 'Invalid id' });
+        if ( !Validators.isUUID(id) ) return res.status(400).json({ error: 'Invalid id' });
 
         this.scheduleService.getSchedule(id)
         .then(shedule => res.json(shedule))
@@ -48,7 +48,7 @@ export class ScheduleController {
         const [error, paginationDto ] = PaginationDto.create(+page, +limit);
         if (error) return res.status(400).json({ error });
 
-        if ( !Validators.isMongoID(companyId) ) return res.status(400).json({ error: 'Invalid id' });
+        if ( !Validators.isUUID(companyId) ) return res.status(400).json({ error: 'Invalid id' });
 
         this.scheduleService.getSchedulesByCompany(companyId, paginationDto! )
         .then(shedules => res.json(shedules))
@@ -69,7 +69,7 @@ export class ScheduleController {
     updateSchedule = (req: Request, res: Response) => {
         const { id: userId } = req.body.user;
         const { id } = req.params;
-        if ( !Validators.isMongoID(id) ) return res.status(400).json({ error: 'Invalid id' });
+        if ( !Validators.isUUID(id) ) return res.status(400).json({ error: 'Invalid id' });
 
         const [error, updateScheduleDto] = UpdateScheduleDto.create(req.body);
         if (error) return res.status(400).json({ error });

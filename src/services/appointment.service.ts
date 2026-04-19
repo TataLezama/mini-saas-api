@@ -44,7 +44,7 @@ export class AppointmentService {
         const appointmentExist = await prisma.appointment.findFirst({ where: { id } });
         if (!appointmentExist) throw CustomError.badRequest('Appointment not exist');
 
-        if (userExist._id !== appointmentExist.user) throw CustomError.badRequest('User not authorized');
+        if (userExist.id !== appointmentExist.userId) throw CustomError.badRequest('User not authorized');
 
         const { ...appoimentEntity } = AppointmentEntity.fromObject(appointmentExist);
 
@@ -73,7 +73,7 @@ export class AppointmentService {
                 prisma.appointment.count(),
                 prisma.appointment.findMany({
                     where: {
-                        companyId: companyExist.id,
+                        
                     },
                     skip: page * limit,
                     take: limit,
@@ -217,13 +217,19 @@ export class AppointmentService {
         if (!scheduleExist.is_available) throw CustomError.badRequest('Schedule not available');
 
         try {
-            const appointment = new prisma.appointment({
-                ...createAppointmentDto,
-                productId: productExist.id,
-                scheduleId: scheduleExist.id,
-                userId: userExist.id,
+            
+            const appointment = await prisma.appointment.create({
+                data: {
+                    ...createAppointmentDto,
+                    productId: productExist.id,
+                    scheduleId: scheduleExist.id,
+                    userId: userExist.id,
+                }
             });
-            await appointment.save();
+            await prisma.appointment.update({
+                where: { id: appointment.id },
+                data: appointment,
+            });
             return appointment;
         } catch (error) {
             throw CustomError.internalServerError(`${ error }`);
@@ -238,11 +244,14 @@ export class AppointmentService {
 
         const appointmentExist = await prisma.appointment.findFirst({ where: { id } });
         if (!appointmentExist) throw CustomError.badRequest('Appointment not exist');
-        if (userExist._id !== appointmentExist.user) throw CustomError.badRequest('User not authorized');
+        if (userExist.id !== appointmentExist.userId) throw CustomError.badRequest('User not authorized');
 
         try {
             appointmentExist.accepted = true;
-            await appointmentExist.save();
+            await prisma.appointment.update({
+                where: { id },
+                data: appointmentExist,
+            });
             
             const user = await prisma.user.findFirst({ where: { id: appointmentExist.userId } });
             if (!user) throw CustomError.badRequest('User not exist');
@@ -263,14 +272,17 @@ export class AppointmentService {
 
         const appointmentExist = await prisma.appointment.findFirst({ where: { id } });
         if (!appointmentExist) throw CustomError.badRequest('Appointment not exist');
-        if (userExist._id !== appointmentExist.user) throw CustomError.badRequest('User not authorized');
+        if (userExist.id !== appointmentExist.userId) throw CustomError.badRequest('User not authorized');
 
         try {
-            if (updateAppointmentDto.notes !== '') appointmentExist.notes = updateAppointmentDto.notes;
+            if (updateAppointmentDto.notes !== '') appointmentExist.notes = updateAppointmentDto.notes ?? '';
             if (updateAppointmentDto.paid) appointmentExist.paid = updateAppointmentDto.paid;
             if (updateAppointmentDto.accepted) appointmentExist.accepted = updateAppointmentDto.accepted;
             
-            await appointmentExist.save();
+            await prisma.appointment.update({
+                where: { id },
+                data: appointmentExist,
+            });
             
             return appointmentExist;
         } catch (error) {

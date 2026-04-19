@@ -33,7 +33,7 @@ export class UserController {
 
     getUser = (req: Request, res: Response) => {
         const { id } = req.params;
-        if ( !Validators.isMongoID(id) ) return res.status(400).json({ error: 'Invalid id' });
+        if ( !Validators.isUUID(id) ) return res.status(400).json({ error: 'Invalid id' });
 
         this.userService.getUser(id)
         .then(user => res.json(user))

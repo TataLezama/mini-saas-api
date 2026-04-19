@@ -1,4 +1,4 @@
-import { Decimal } from "@prisma/client/runtime/wasm-compiler-edge";
+import { Decimal } from "@prisma/client/runtime/library";
 
 export class CreateProductDto {
   private constructor(

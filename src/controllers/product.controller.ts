@@ -34,7 +34,7 @@ export class ProductController {
 
     getProduct = (req: Request, res: Response) => {
         const { id } = req.params;
-        if ( !Validators.isMongoID(id) ) return res.status(400).json({ error: 'Invalid id' });
+        if ( !Validators.isUUID(id) ) return res.status(400).json({ error: 'Invalid id' });
 
         this.productService.getProduct(id)
         .then(product => res.json(product))
@@ -48,7 +48,7 @@ export class ProductController {
         const [error, paginationDto ] = PaginationDto.create(+page, +limit);
         if (error) return res.status(400).json({ error });
 
-        if ( !Validators.isMongoID(companyId) ) return res.status(400).json({ error: 'Invalid id' });
+        if ( !Validators.isUUID(companyId) ) return res.status(400).json({ error: 'Invalid id' });
 
         this.productService.getProductsByCompany(companyId, paginationDto! )
         .then(products => res.json(products))
@@ -69,7 +69,7 @@ export class ProductController {
     updateProduct = (req: Request, res: Response) => {
         const { id: userId } = req.body.user;
         const { id } = req.params;
-        if ( !Validators.isMongoID(id) ) return res.status(400).json({ error: 'Invalid id' });
+        if ( !Validators.isUUID(id) ) return res.status(400).json({ error: 'Invalid id' });
 
         const [error, updateProductDto] = UpdateProductDto.create(req.body);
         if (error) return res.status(400).json({ error });

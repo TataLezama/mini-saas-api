@@ -18,15 +18,20 @@ export class AuthService {
         if (userExist) throw CustomError.badRequest('User already exists');
 
         try{
-            const user = new prisma.user({
-                ...registerUserDto,
-                password: await hashPassword(registerUserDto.password),
+            const user = await prisma.user.create({
+                data: {
+                    ...registerUserDto,
+                    password: await hashPassword(registerUserDto.password),
+                }
             });
 
             // Encriptar contraseña
             user.password = await hashPassword(registerUserDto.password);
 
-            await user.save();
+            await prisma.user.update({
+                where: { id: user.id },
+                data: user,
+            });
 
             // Email de validación
             // this.sendEmailWithValidationLink(user.id, user.email);
@@ -105,7 +110,10 @@ export class AuthService {
         if (!comparePassword(password, userExist.password)) throw CustomError.badRequest('Invalid password');
         
         userExist.password = await hashPassword(newPassword);
-        await userExist.save();
+        await prisma.user.update({
+            where: { id: userExist.id },
+            data: userExist,
+        });
 
         return true;
     }
@@ -145,7 +153,10 @@ export class AuthService {
         this.sendEmailConfirmed(user.email);
 
         user.emailValidated = true;
-        await user.save();
+        await prisma.user.update({
+            where: { id: user.id },
+            data: user,
+        });
         
         return true;
     }

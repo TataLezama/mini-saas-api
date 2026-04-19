@@ -47,12 +47,17 @@ export class CompanyService {
         if ( userExist.id !== createCompanyDto.userId ) throw CustomError.badRequest('You are not authorized');
         
         try{
-            const company = new prisma.company({
-                ...createCompanyDto,
-                userId: userExist.id,
+            const company = await prisma.company.create({
+                data: {
+                    ...createCompanyDto,
+                    userId: userExist.id,
+                }
             });
 
-            await company.save();
+            await prisma.company.update({
+                where: { id: company.id },
+                data: company,
+            });
 
             const { ...companyEntity } = CompanyEntity.fromObject(company);
 
@@ -78,7 +83,10 @@ export class CompanyService {
         
         try{
             companyExist.active = true;
-            await companyExist.save();
+            await prisma.company.update({
+                where: { id },
+                data: companyExist,
+            });
 
             const user = await prisma.user.findFirst({ where: { id: companyExist.userId } });
             if (!user) throw CustomError.badRequest('User not exist');
@@ -113,14 +121,17 @@ export class CompanyService {
                 const isExist = await prisma.company.findFirst({ where: { name: updateCompanyDto.name } });
                 if (isExist) throw CustomError.badRequest('This name is already in use');
                 
-                companyExist.name = updateCompanyDto.name;
+                companyExist.name = updateCompanyDto.name ?? '';
                 companyExist.active = false;
             }
-            if (updateCompanyDto.description !== '') companyExist.description = updateCompanyDto.description;
-            if (updateCompanyDto.phone !== '') companyExist.phone = updateCompanyDto.phone;
-            if (updateCompanyDto.image !== '') companyExist.image = updateCompanyDto.image;
+            if (updateCompanyDto.description !== '') companyExist.description = updateCompanyDto.description ?? '';
+            if (updateCompanyDto.phone !== '') companyExist.phone = updateCompanyDto.phone ?? '';
+            if (updateCompanyDto.image !== '') companyExist.image = updateCompanyDto.image ?? '';
             
-            await companyExist.save();
+            await prisma.company.update({
+                where: { id },
+                data: companyExist,
+            });
             
             return companyExist;
 

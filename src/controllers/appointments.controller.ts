@@ -32,7 +32,7 @@ export class AppointmentController {
     getAppoiment = (req: Request, res: Response) => {
         const { id: userId } = req.body.user;
         const { id } = req.params;
-        if ( !Validators.isMongoID(id) ) return res.status(400).json({ error: 'Invalid id' });
+        if ( !Validators.isUUID(id) ) return res.status(400).json({ error: 'Invalid id' });
 
         this.appoimentService.getAppointment(userId, id)
         .then(appointment => res.json(appointment))
@@ -47,7 +47,7 @@ export class AppointmentController {
         const [error, paginationDto ] = PaginationDto.create(+page, +limit);
         if (error) return res.status(400).json({ error });
 
-        if ( !Validators.isMongoID(companyId) ) return res.status(400).json({ error: 'Invalid id' });
+        if ( !Validators.isUUID(companyId) ) return res.status(400).json({ error: 'Invalid id' });
 
         this.appoimentService.getAppointmentsByCompany(userId, companyId, paginationDto! )
         .then(appointments => res.json(appointments))
@@ -62,7 +62,7 @@ export class AppointmentController {
         const [error, paginationDto ] = PaginationDto.create(+page, +limit);
         if (error) return res.status(400).json({ error });
 
-        if ( !Validators.isMongoID(productId) ) return res.status(400).json({ error: 'Invalid id' });
+        if ( !Validators.isUUID(productId) ) return res.status(400).json({ error: 'Invalid id' });
 
         this.appoimentService.getAppointmentsByProduct(userId, productId, paginationDto! )
         .then(appointments => res.json(appointments))
@@ -77,7 +77,7 @@ export class AppointmentController {
         const [error, paginationDto ] = PaginationDto.create(+page, +limit);
         if (error) return res.status(400).json({ error });
 
-        if ( !Validators.isMongoID(scheduleId) ) return res.status(400).json({ error: 'Invalid id' });
+        if ( !Validators.isUUID(scheduleId) ) return res.status(400).json({ error: 'Invalid id' });
 
         this.appoimentService.getAppointmentsBySchedule(userId, scheduleId, paginationDto! )
         .then(appointments => res.json(appointments))
@@ -92,7 +92,7 @@ export class AppointmentController {
         const [error, paginationDto ] = PaginationDto.create(+page, +limit);
         if (error) return res.status(400).json({ error });
 
-        if ( !Validators.isMongoID(userId) ) return res.status(400).json({ error: 'Invalid id' });
+        if ( !Validators.isUUID(userId) ) return res.status(400).json({ error: 'Invalid id' });
 
         this.appoimentService.getAppointmentsByUser(userId, userId2, paginationDto! )
         .then(appointments => res.json(appointments))
@@ -113,7 +113,7 @@ export class AppointmentController {
     updateAppoiment = (req: Request, res: Response) => {
         const { id: userId } = req.body.user;
         const { id } = req.params;
-        if ( !Validators.isMongoID(id) ) return res.status(400).json({ error: 'Invalid id' });
+        if ( !Validators.isUUID(id) ) return res.status(400).json({ error: 'Invalid id' });
 
         const [error, updateAppointmentDto] = UpdateAppointmentDto.create(req.body);
         if (error) return res.status(400).json({ error });

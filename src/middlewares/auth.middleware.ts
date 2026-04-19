@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { validateToken, JwtPayload } from "../utils";
-import { UserModel } from "../database/models/user.model";
+import { prisma } from "../configs";
 
 export interface AuthRequest extends Request {
   user?: JwtPayload;
@@ -28,7 +28,7 @@ export const authMiddleware = async (
             return;
         }
 
-        const user = await UserModel.findById(decoded.id);
+        const user = await prisma.user.findFirst({ where: { id: decoded.id } });
         if (!user) {
             res.status(401).json({ error: 'User not found' });
             return;

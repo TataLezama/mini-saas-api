@@ -21,7 +21,7 @@ export class CompanyController {
     }
 
     createCompany = (req: Request, res: Response) => {
-        const { id, email } = req.body.user;
+        const { id } = req.body.user;
         const [error, createCompanyDto] = CreateCompanyDto.create(req.body);
         if (error) return res.status(400).json({ error });
 
@@ -44,7 +44,7 @@ export class CompanyController {
 
     getCompany = (req: Request, res: Response) => {
         const { id } = req.params;
-        if ( !Validators.isMongoID(id) ) return res.status(400).json({ error: 'Invalid id' });
+        if ( !Validators.isUUID(id) ) return res.status(400).json({ error: 'Invalid id' });
 
         this.companyService.getCompany(id)
         .then(company => res.json(company))
@@ -54,7 +54,7 @@ export class CompanyController {
     updateCompany = (req: Request, res: Response) => {
         const { id: userId } = req.body.user;
         const { id } = req.params;
-        if ( !Validators.isMongoID(id) ) return res.status(400).json({ error: 'Invalid id' });
+        if ( !Validators.isUUID(id) ) return res.status(400).json({ error: 'Invalid id' });
 
         const [error, updateCompanyDto] = UpdateCompanyDto.create(req.body);
         if (error) return res.status(400).json({ error });
@@ -66,7 +66,7 @@ export class CompanyController {
 
     activateCompany = (req: Request, res: Response) => {
         const { id } = req.params;
-        if ( !Validators.isMongoID(id) ) return res.status(400).json({ error: 'Invalid id' });
+        if ( !Validators.isUUID(id) ) return res.status(400).json({ error: 'Invalid id' });
 
         this.companyService.activateCompany(id)
         .then(company => res.json(company))

@@ -91,12 +91,18 @@ export class ScheduleService {
         if (!companyExist.active) throw CustomError.badRequest('Company not active');
 
         try {
-            const schedule = new prisma.schedule({
-                ...createScheduleDto,
-                companyId: companyExist.id,
-                userId: userExist.id,
+            const schedule = await prisma.schedule.create({
+                data: {
+                    ...createScheduleDto,
+                    companyId: companyExist.id,
+                }
             });
-            await schedule.save();
+
+            await prisma.schedule.update({
+                where: { id: schedule.id },
+                data: schedule,
+            });
+
             return schedule;
         } catch (error) {
             throw CustomError.internalServerError(`${ error }`);
@@ -105,32 +111,36 @@ export class ScheduleService {
     }
 
     public async updateSchedule(userId: string, id: string, updateScheduleDto: UpdateScheduleDto ) {
-        const userExist = await prisma.user.findFirst({ where: { id } });
-        if (!userExist) throw CustomError.badRequest('User not exist');
-        if (userExist.id !== updateScheduleDto.userId) throw CustomError.badRequest('User are not authorized');
+        // const userExist = await prisma.user.findFirst({ where: { id } });
+        // if (!userExist) throw CustomError.badRequest('User not exist');
+        // if (userExist.id !== updateScheduleDto.userId) throw CustomError.badRequest('User are not authorized');
         
-        const scheduleExist = ( userExist.role === 'admin')
-            ? await prisma.schedule.findFirst({ where: { id } })
-            : await prisma.schedule.findFirst({
-                where: {
-                    id,
-                    userId: userExist.id,
-                },
-            });
-        if (!scheduleExist) throw CustomError.badRequest('Schedule not exist');
+        // const scheduleExist = ( userExist.role === 'admin')
+        //     ? await prisma.schedule.findFirst({ where: { id } })
+        //     : await prisma.schedule.findFirst({
+        //         where: {
+        //             id,
+        //             userId: userExist.id,
+        //         },
+        //     });
+        // if (!scheduleExist) throw CustomError.badRequest('Schedule not exist');
 
-        try {
-            // if (updateScheduleDto.day_of_week) scheduleExist.day_of_week = updateScheduleDto.day_of_week;
-            if (updateScheduleDto.start_time !== '') scheduleExist.start_time = updateScheduleDto.start_time;
-            if (updateScheduleDto.end_time !== '') scheduleExist.end_time = updateScheduleDto.end_time;
-            if (updateScheduleDto.is_available) scheduleExist.is_available = updateScheduleDto.is_available;
+        // try {
             
-            await scheduleExist.save();
+        //     if (updateScheduleDto.day_of_week !== '') scheduleExist.day_of_week = updateScheduleDto.day_of_week ?? '';
+        //     if (updateScheduleDto.start_time !== '') scheduleExist.start_time = updateScheduleDto.start_time ?? '';
+        //     if (updateScheduleDto.end_time !== '') scheduleExist.end_time = updateScheduleDto.end_time ?? '';
+        //     if (updateScheduleDto.is_available) scheduleExist.is_available = updateScheduleDto.is_available ?? false;
             
-            return scheduleExist;
-        } catch (error) {
-            throw CustomError.internalServerError(`${ error }`);
-        }
+        //     await prisma.schedule.update({
+        //         where: { id },
+        //         data: scheduleExist,
+        //     });
+            
+        //     return scheduleExist;
+        // } catch (error) {
+        //     throw CustomError.internalServerError(`${ error }`);
+        // }
     }
 
 }

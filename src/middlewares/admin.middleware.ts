@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { AuthRequest } from "./auth.middleware";
 import { validateToken } from "../utils";
-import { UserModel } from "../database/models/user.model";
+import { prisma } from "../configs";
 
 export const adminMiddleware = async (
     req: AuthRequest,
@@ -25,7 +25,7 @@ export const adminMiddleware = async (
             return;
         }
 
-        const user = await UserModel.findById(decoded.id);
+        const user = await prisma.user.findFirst({ where: { id: decoded.id } });
         if (!user) {
             res.status(401).json({ error: 'User not found' });
             return;

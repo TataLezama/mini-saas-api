@@ -48,15 +48,18 @@ export class UserService {
         if (userExist.role !== 'admin' && (userExist.id !== updateUserDto.userId)) throw CustomError.badRequest('You are not authorized');
 
         try {
-            if (updateUserDto.name !== '') userExist.name = updateUserDto.name;
-            if (updateUserDto.phone !== '') userExist.phone = updateUserDto.phone;
-            if (updateUserDto.password !== '') userExist.password = await hashPassword(updateUserDto.password);
+            if (updateUserDto.name !== '') userExist.name = updateUserDto.name ?? '';
+            if (updateUserDto.phone !== '') userExist.phone = updateUserDto.phone ?? '';
+            if (updateUserDto.password && updateUserDto.password !== '') userExist.password = await hashPassword(updateUserDto.password ?? '');
 
-            if ( userExist.role === 'admin' ){
-                //if (updateUserDto.role !== '') userExist.role = updateUserDto.role;
+            if ( userExist.role === 'admin' ) {
+                // if (updateUserDto.role !== '') userExist.role = updateUserDto.role ?? '';
             }
             
-            await userExist.save();
+            await prisma.user.update({
+                where: { id },
+                data: userExist,
+            });
             
             return userExist;
         } catch (error) {
