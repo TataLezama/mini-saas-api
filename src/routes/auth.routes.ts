@@ -8,14 +8,8 @@ export class AuthRoutes {
     static get routes(): Router {
         const router = Router();
 
-        const emailService = new EmailService(
-            envs.MAILER_SERVICE,
-            envs.MAILER_EMAIL,
-            envs.MAILER_SECRET_KEY,
-        );
-        const authServices = new AuthService(emailService);
+        const authServices = new AuthService();
         const controller = new AuthController(authServices);
-        
         
         // Definir las rutas
         router.post('/register', controller.registerUser );

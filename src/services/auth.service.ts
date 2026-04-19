@@ -1,17 +1,15 @@
 import { envs, prisma } from "../configs";
-import { EmailService } from "./email.service";
 import { generateToken, validateToken, hashPassword, comparePassword } from "../utils";
 import { RegisterUserDto, LoginUserDto } from "../modules";
 import { CustomError } from "../errors/custom.error";
 import { ChangePasswordDto } from '../modules/auth/change-password.dto';
 import { UserEntity } from "../database/entities/User.entity";
+import { sendEmail } from "./sengrid.service";
 
 
 export class AuthService {
 
-    constructor(
-        private readonly emailService: EmailService,
-    ) {}
+    constructor() {}
 
     public async registerUser( registerUserDto: RegisterUserDto ) {
         const userExist = await prisma.user.findFirst({ where: { email: registerUserDto.email } });
@@ -85,10 +83,10 @@ export class AuthService {
             to: email,
             subject: 'Recover your password',
             htmlBody,
+            text: 'Click on the following link to restart your password',
         }
 
-        const isSet = await this.emailService.sendEmail(options);
-        if (!isSet) throw CustomError.internalServerError('Error sending email');
+        sendEmail(options);
 
         return true;
     }
@@ -118,27 +116,6 @@ export class AuthService {
         return true;
     }
 
-    private sendEmailWithValidationLink = async (id: string, email: string) => {
-        const token = await generateToken({id, email});
-        if (!token) throw CustomError.internalServerError('Error generating token');
-
-        const link = `${ envs.WEBSERVICE_URL }/auth/validate-email/${ token }`;
-        const htmlBody = `<h1>Welcome!</h1>
-        <p>Click on the following link to validate your email</p>
-        <a href="${ link }">Validate your email: ${ email }</a>`;
-
-        const options = {
-            to: email,
-            subject: 'Validate your email',
-            htmlBody,
-        }
-
-        const isSet = await this.emailService.sendEmail(options);
-        if (!isSet) throw CustomError.internalServerError('Error sending email');
-
-        return true;
-    }
-
     public validateEmail = async (token: string) => {
         const payload = await validateToken(token);
         if(!payload) throw CustomError.unauthorized('Invalid token');
@@ -161,6 +138,28 @@ export class AuthService {
         return true;
     }
 
+    private sendEmailWithValidationLink = async (id: string, email: string) => {
+        const token = await generateToken({id, email});
+        if (!token) throw CustomError.internalServerError('Error generating token');
+
+        const link = `${ envs.WEBSERVICE_URL }/auth/validate-email/${ token }`;
+        const subject = 'Validate your email';
+        const htmlBody = `<h1>Welcome!</h1>
+        <p>Click on the following link to validate your email</p>
+        <a href="${ link }">Validate your email: ${ email }</a>`;
+        const text = `Welcome! Click on the following link to validate your email`;
+
+        const options = {
+            to: email,
+            subject,
+            htmlBody,
+            text,
+        }
+        sendEmail(options);
+
+        return true;
+    }
+
     private sendEmailConfirmed = async (email: string) => {
         const htmlBody = `<h1>Email confirmed</h1>
         <p>Your email has been confirmed</p>`;
@@ -169,10 +168,10 @@ export class AuthService {
             to: email,
             subject: 'Email confirmed',
             htmlBody,
+            text: 'Your email has been confirmed'
         }
 
-        const isSet = await this.emailService.sendEmail(options);
-        if (!isSet) throw CustomError.internalServerError('Error sending email');
+        sendEmail(options);
 
         return true;
     }
