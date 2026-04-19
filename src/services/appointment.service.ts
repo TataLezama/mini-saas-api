@@ -18,8 +18,8 @@ export class AppointmentService {
             const [total, appoiments] = await Promise.all([
                 prisma.appointment.count(),
                 prisma.appointment.findMany({
-                    skip: page * limit,
-                    take: limit,
+                    skip: (page - 1) * limit,
+                    take: limit
                 }),
             ]);
             
@@ -77,8 +77,8 @@ export class AppointmentService {
                     where: {
                         
                     },
-                    skip: page * limit,
-                    take: limit,
+                    skip: (page - 1) * limit,
+                    take: limit
                 }),
             ]);
             
@@ -114,8 +114,8 @@ export class AppointmentService {
                     where: {
                         productId: productExist.id,
                     },
-                    skip: page * limit,
-                    take: limit,
+                    skip: (page - 1) * limit,
+                    take: limit
                 }),
             ]);
             
@@ -151,8 +151,8 @@ export class AppointmentService {
                     where: {
                         scheduleId: scheduleExist.id,
                     },
-                    skip: page * limit,
-                    take: limit,
+                    skip: (page - 1) * limit,
+                    take: limit
                 }),
             ]);
             
@@ -185,8 +185,8 @@ export class AppointmentService {
                     where: {
                         userId: userExist.id,
                     },
-                    skip: page * limit,
-                    take: limit,
+                    skip: (page - 1) * limit,
+                    take: limit
                 }),
             ]);
             

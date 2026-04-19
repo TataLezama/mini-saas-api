@@ -17,7 +17,10 @@ export class CompanyService {
 
             const [total, companies] = await Promise.all([
                 prisma.company.count(),
-                prisma.company.findMany({ skip: page * limit, take: limit }),
+                prisma.company.findMany({ 
+                    skip: (page - 1) * limit,
+                    take: limit
+                }),
             ]);
             
             return {

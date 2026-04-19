@@ -14,8 +14,8 @@ export class ScheduleService {
             const [total, schedules] = await Promise.all([
                 prisma.schedule.count(),
                 prisma.schedule.findMany({
-                    skip: page * limit,
-                    take: limit,
+                    skip: (page - 1) * limit,
+                    take: limit
                 }),
             ]);
             
@@ -54,8 +54,8 @@ export class ScheduleService {
                     where: {
                         companyId: companyExist.id,
                     },
-                    skip: page * limit,
-                    take: limit,
+                    skip: (page - 1) * limit,
+                    take: limit
                 }),
             ]);
             

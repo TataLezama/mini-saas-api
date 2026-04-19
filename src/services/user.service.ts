@@ -15,8 +15,8 @@ export class UserService {
             const [total, users] = await Promise.all([
                 prisma.user.count(),
                 prisma.user.findMany({
-                    skip: page * limit,
-                    take: limit,
+                    skip: (page - 1) * limit,
+                    take: limit
                 }),
             ]);
             

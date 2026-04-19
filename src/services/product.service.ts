@@ -14,8 +14,8 @@ export class ProductService {
             const [total, products] = await Promise.all([
                 prisma.product.count(),
                 prisma.product.findMany({
-                    skip: page * limit,
-                    take: limit,
+                    skip: (page - 1) * limit,
+                    take: limit
                 }),
             ]);
             
@@ -54,8 +54,8 @@ export class ProductService {
                     where: {
                         companyId: companyExist.id,
                     },
-                    skip: page * limit,
-                    take: limit,
+                    skip: (page - 1) * limit,
+                    take: limit
                 }),
             ]);
             
