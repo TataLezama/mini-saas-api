@@ -3,14 +3,13 @@ import { CustomError } from "../errors/custom.error";
 import { EmailService } from "./email.service";
 import { prisma } from "../configs";
 import { CompanyEntity } from "../database/entities/Company.entity";
+import { sendEmail } from "./sengrid.service";
 
 
 
 export class CompanyService {
 
-    constructor(
-        private readonly emailService: EmailService,
-    ) {}
+    constructor() {}
 
     public async  getCompanies(paginationDto: PaginationDto) {
         const { page, limit } = paginationDto;
@@ -18,10 +17,7 @@ export class CompanyService {
 
             const [total, companies] = await Promise.all([
                 prisma.company.count(),
-                prisma.company.findMany({
-                    skip: page * limit,
-                    take: limit,
-                }),
+                prisma.company.findMany({ skip: page * limit, take: limit }),
             ]);
             
             return {
@@ -30,7 +26,7 @@ export class CompanyService {
                 total: total,
                 next:`/api/companies?page=${ page + 1 }&limit=${ limit }`,
                 previous: (page - 1 > 0) ? `/api/companies?page=${ page - 1 }&limit=${ limit }` : null,
-                users: companies,
+                companies: companies,
             }
         } catch (error) {
             throw CustomError.internalServerError(`${ error }`);
@@ -38,13 +34,17 @@ export class CompanyService {
     }
 
     public async createCompany(id: string, createCompanyDto: CreateCompanyDto) {
-        const companyExist = await prisma.company.findFirst({ where: { name: createCompanyDto.name } });
+        const companyExist = await prisma.company.findFirst({
+            where: { 
+                name: createCompanyDto.name,
+            }
+        });
         if (companyExist) throw CustomError.badRequest('Company already exists');
 
-        const userExist = await prisma.user.findFirst({ where: { id } });
+        const userExist = await prisma.user.findUnique({ where: { id } });
         if ( !userExist ) throw CustomError.badRequest('User not exist');
         if ( !userExist.emailValidated ) throw CustomError.badRequest('User not validated');
-        if ( userExist.id !== createCompanyDto.userId ) throw CustomError.badRequest('You are not authorized');
+        if ( userExist.id !== createCompanyDto.userId ) throw CustomError.badRequest('User not authorized');
         
         try{
             const company = await prisma.company.create({
@@ -62,13 +62,14 @@ export class CompanyService {
             const { ...companyEntity } = CompanyEntity.fromObject(company);
 
             return companyEntity;
+
         } catch (error) {
             throw CustomError.internalServerError(`${ error }`);
         }
     }
 
     public async getCompany(id: string) {
-        const companyExist = await prisma.company.findFirst({ where: { id } });
+        const companyExist = await prisma.company.findUnique({ where: { id } });
         if (!companyExist) throw CustomError.badRequest('Company not exist');
 
         const { ...companyEntity } = CompanyEntity.fromObject(companyExist);
@@ -77,7 +78,7 @@ export class CompanyService {
     }
 
     public async activateCompany(id: string) {
-        const companyExist = await prisma.company.findFirst({ where: { id } });
+        const companyExist = await prisma.company.findUnique({ where: { id } });
         if (!companyExist) throw CustomError.badRequest('Company not exist');
         if (companyExist.active) throw CustomError.badRequest('Company already active');
         
@@ -88,7 +89,7 @@ export class CompanyService {
                 data: companyExist,
             });
 
-            const user = await prisma.user.findFirst({ where: { id: companyExist.userId } });
+            const user = await prisma.user.findUnique({ where: { id: companyExist.userId } });
             if (!user) throw CustomError.badRequest('User not exist');
             if (!user.emailValidated) throw CustomError.badRequest('User not validated');
             
@@ -101,12 +102,12 @@ export class CompanyService {
     }
 
     public async updateCompany(userId: string, id: string, updateCompanyDto: UpdateCompanyDto) {
-        const userExist = await prisma.user.findFirst({ where: { id } });
+        const userExist = await prisma.user.findUnique({ where: { id } });
         if (!userExist) throw CustomError.badRequest('User not exist');
         if (userExist.id !== updateCompanyDto.userId) throw CustomError.badRequest('User are not authorized');
         
         const companyExist = ( userExist.role === 'admin')
-            ? await prisma.company.findFirst({ where: { id } })
+            ? await prisma.company.findUnique({ where: { id } })
             : await prisma.company.findFirst({
                 where: {
                     id,
@@ -148,10 +149,10 @@ export class CompanyService {
             to: email,
             subject: 'Company activated',
             htmlBody,
+            text: 'Your company has been activated',
         }
 
-        const isSet = await this.emailService.sendEmail(options);
-        if (!isSet) throw CustomError.internalServerError('Error sending email');
+        sendEmail(options);
 
         return true;
     }

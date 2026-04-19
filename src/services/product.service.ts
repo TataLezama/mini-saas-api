@@ -25,7 +25,7 @@ export class ProductService {
                 total: total,
                 next:`/api/products?page=${ page + 1 }&limit=${ limit }`,
                 previous: (page - 1 > 0) ? `/api/products?page=${ page - 1 }&limit=${ limit }` : null,
-                users: products,
+                products: products,
             }
         } catch (error) {
             throw CustomError.internalServerError(`${ error }`);
@@ -33,7 +33,7 @@ export class ProductService {
     }
 
     public async getProduct(id: string) {
-        const productExist = await prisma.product.findFirst({ where: { id } });
+        const productExist = await prisma.product.findUnique({ where: { id } });
         if (!productExist) throw CustomError.badRequest('Product not exist');
 
         const { ...productEntity } = ProductEntity.fromObject(productExist);
@@ -42,7 +42,7 @@ export class ProductService {
     }
 
     public async getProductsByCompany(companyId: string, paginationDto: PaginationDto) {
-        const companyExist = await prisma.company.findFirst({ where: { id: companyId } });
+        const companyExist = await prisma.company.findUnique({ where: { id: companyId } });
         if (!companyExist) throw CustomError.badRequest('Company not exist');
 
         const { page, limit } = paginationDto;
@@ -65,7 +65,7 @@ export class ProductService {
                 total: total,
                 next:`/api/products?page=${ page + 1 }&limit=${ limit }`,
                 previous: (page - 1 > 0) ? `/api/products?page=${ page - 1 }&limit=${ limit }` : null,
-                users: products,
+                products: products,
             }
         } catch (error) {
             throw CustomError.internalServerError(`${ error }`);

@@ -33,7 +33,7 @@ export class ScheduleService {
     }
 
     public async getSchedule(id: string) {
-        const scheduleExist = await prisma.schedule.findFirst({ where: { id } });
+        const scheduleExist = await prisma.schedule.findUnique({ where: { id } });
         if (!scheduleExist) throw CustomError.badRequest('Schedule not exist');
 
         const { ...scheduleEntity } = ScheduleEntity.fromObject(scheduleExist);
@@ -42,7 +42,7 @@ export class ScheduleService {
     }
 
     public async getSchedulesByCompany(companyId: string, paginationDto: PaginationDto) {
-        const companyExist = await prisma.company.findFirst({ where: { id: companyId } });
+        const companyExist = await prisma.company.findUnique({ where: { id: companyId } });
         if (!companyExist) throw CustomError.badRequest('Company not exist');
 
         const { page, limit } = paginationDto;
@@ -74,13 +74,13 @@ export class ScheduleService {
     }
 
     public async createSchedule( id: string, createScheduleDto: CreateScheduleDto ) {        
-        const userExist = await prisma.user.findFirst({ where: { id } });
+        const userExist = await prisma.user.findUnique({ where: { id } });
         if (!userExist) throw CustomError.badRequest('User not exist');
         if (!userExist.emailValidated) throw CustomError.badRequest('User not validated');
         if (userExist.id !== createScheduleDto.userId) throw CustomError.badRequest('You are not authorized');
 
         const companyExist = ( userExist.role === 'admin')
-            ? await prisma.company.findFirst({ where: { id: createScheduleDto.companyId } })
+            ? await prisma.company.findUnique({ where: { id: createScheduleDto.companyId } })
             : await prisma.company.findFirst({
                 where: {
                     id: createScheduleDto.companyId,

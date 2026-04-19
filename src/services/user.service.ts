@@ -34,7 +34,7 @@ export class UserService {
     }
 
     public async getUser(id: string) {
-        const userExist = await prisma.user.findFirst({ where: { id } });
+        const userExist = await prisma.user.findUnique({ where: { id } });
         if (!userExist) throw CustomError.badRequest('User not exist');
 
         const { password, ...userEntity } = UserEntity.fromObject(userExist);
@@ -43,7 +43,7 @@ export class UserService {
     }
 
     public async updateUser( id: string, updateUserDto: UpdateUserDto ) {
-        const userExist = await prisma.user.findFirst({ where: { id } });
+        const userExist = await prisma.user.findUnique({ where: { id } });
         if (!userExist) throw CustomError.badRequest('User not exist');
         if (userExist.role !== 'admin' && (userExist.id !== updateUserDto.userId)) throw CustomError.badRequest('You are not authorized');
 

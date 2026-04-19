@@ -17,6 +17,7 @@ export class ScheduleRoutes {
 
         router.get('/:id', controller.getShcedule );
         router.get('/company/:companyId', controller.getShedulesByCompany );
+        // router.get('/product/:productId', controller.getShedulesByProduct );
 
         router.post('/', [authMiddleware], controller.createSchedule );
         router.put('/:id', [authMiddleware], controller.updateSchedule );

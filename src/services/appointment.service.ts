@@ -29,22 +29,24 @@ export class AppointmentService {
                 total: total,
                 next:`/api/appoiments?page=${ page + 1 }&limit=${ limit }`,
                 previous: (page - 1 > 0) ? `/api/appoiments?page=${ page - 1 }&limit=${ limit }` : null,
-                users: appoiments,
+                appointments: appoiments,
             }
         } catch (error) {
             throw CustomError.internalServerError(`${ error }`);
         }
     }
 
-    public async getAppointment(userId:string, id: string) {
-        const userExist = await prisma.user.findFirst({ where: { id } });
+    public async getAppointment(userId: string, id: string) {
+        const userExist = await prisma.user.findUnique({ where: { id: userId } });
         if (!userExist) throw CustomError.badRequest('User not exist');
         if (!userExist.emailValidated) throw CustomError.badRequest('User not validated');
         
-        const appointmentExist = await prisma.appointment.findFirst({ where: { id } });
+        const appointmentExist = await prisma.appointment.findUnique({ where: { id } });
         if (!appointmentExist) throw CustomError.badRequest('Appointment not exist');
 
-        if (userExist.id !== appointmentExist.userId) throw CustomError.badRequest('User not authorized');
+        if (userExist.role !== 'admin') {
+            if (userExist.id !== appointmentExist.userId) throw CustomError.badRequest('User not authorized');
+        }
 
         const { ...appoimentEntity } = AppointmentEntity.fromObject(appointmentExist);
 
@@ -52,12 +54,12 @@ export class AppointmentService {
     }
 
     public async getAppointmentsByCompany(userId: string, companyId: string, paginationDto: PaginationDto) {
-        const userExist = await prisma.user.findFirst({ where: { id: userId } });
+        const userExist = await prisma.user.findUnique({ where: { id: userId } });
         if (!userExist) throw CustomError.badRequest('User not exist');
         if (!userExist.emailValidated) throw CustomError.badRequest('User not validated');
 
         const companyExist = ( userExist.role === 'admin')
-            ? await prisma.company.findFirst({ where: { id: companyId } })
+            ? await prisma.company.findUnique({ where: { id: companyId } })
             : await prisma.company.findFirst({
                 where: {
                     id: companyId,
@@ -86,7 +88,7 @@ export class AppointmentService {
                 total: total,
                 next:`/api/appointments?page=${ page + 1 }&limit=${ limit }`,
                 previous: (page - 1 > 0) ? `/api/appointments?page=${ page - 1 }&limit=${ limit }` : null,
-                users: appointments,
+                appointments: appointments,
             }
         } catch (error) {
             throw CustomError.internalServerError(`${ error }`);
@@ -95,11 +97,11 @@ export class AppointmentService {
     }
 
     public async getAppointmentsByProduct(userId: string, productId: string, paginationDto: PaginationDto) {
-        const userExist = await prisma.user.findFirst({ where: { id: userId } });
+        const userExist = await prisma.user.findUnique({ where: { id: userId } });
         if (!userExist) throw CustomError.badRequest('User not exist');
         if (!userExist.emailValidated) throw CustomError.badRequest('User not validated');
 
-        const productExist = await prisma.product.findFirst({ where: { id: productId } });
+        const productExist = await prisma.product.findUnique({ where: { id: productId } });
         if (!productExist) throw CustomError.badRequest('Product not exist');
         if (!productExist.active) throw CustomError.badRequest('Product not active');
 
@@ -123,7 +125,7 @@ export class AppointmentService {
                 total: total,
                 next:`/api/appointments?page=${ page + 1 }&limit=${ limit }`,
                 previous: (page - 1 > 0) ? `/api/appointments?page=${ page - 1 }&limit=${ limit }` : null,
-                users: appointments,
+                appointments: appointments,
             }
         } catch (error) {
             throw CustomError.internalServerError(`${ error }`);
@@ -132,11 +134,11 @@ export class AppointmentService {
     }
 
     public async getAppointmentsBySchedule(userId: string, scheduleId: string, paginationDto: PaginationDto) {
-        const userExist = await prisma.user.findFirst({ where: { id: userId } });
+        const userExist = await prisma.user.findUnique({ where: { id: userId } });
         if (!userExist) throw CustomError.badRequest('User not exist');
         if (!userExist.emailValidated) throw CustomError.badRequest('User not validated');
 
-        const scheduleExist = await prisma.schedule.findFirst({ where: { id: scheduleId } });
+        const scheduleExist = await prisma.schedule.findUnique({ where: { id: scheduleId } });
         if (!scheduleExist) throw CustomError.badRequest('Schedule not exist');
         if (!scheduleExist.is_available) throw CustomError.badRequest('Schedule not available');
 
@@ -160,7 +162,7 @@ export class AppointmentService {
                 total: total,
                 next:`/api/appointments?page=${ page + 1 }&limit=${ limit }`,
                 previous: (page - 1 > 0) ? `/api/appointments?page=${ page - 1 }&limit=${ limit }` : null,
-                users: appointments,
+                appointments: appointments,
             }
         } catch (error) {
             throw CustomError.internalServerError(`${ error }`);
@@ -168,11 +170,11 @@ export class AppointmentService {
 
     }
 
-    public async getAppointmentsByUser(userId: string, userId2: string, paginationDto: PaginationDto) {
-        const userExist = await prisma.user.findFirst({ where: { id: userId } });
+    public async getAppointmentsByUser(id: string, userId: string, paginationDto: PaginationDto) {
+        const userExist = await prisma.user.findUnique({ where: { id } });
         if (!userExist) throw CustomError.badRequest('User not exist');
         if (!userExist.emailValidated) throw CustomError.badRequest('User not validated');
-        if (userExist.id !== userId2) throw CustomError.badRequest('User not authorized');
+        if (userExist.id !== userId) throw CustomError.badRequest('User not authorized');
 
         const { page, limit } = paginationDto;
 
@@ -194,7 +196,7 @@ export class AppointmentService {
                 total: total,
                 next:`/api/appointments?page=${ page + 1 }&limit=${ limit }`,
                 previous: (page - 1 > 0) ? `/api/appointments?page=${ page - 1 }&limit=${ limit }` : null,
-                users: appointments,
+                appointments: appointments,
             }
         } catch (error) {
             throw CustomError.internalServerError(`${ error }`);
@@ -203,16 +205,16 @@ export class AppointmentService {
     }
 
     public async createAppointment( userId: string, createAppointmentDto: CreateAppointmentDto ) {
-        const userExist = await prisma.user.findFirst({ where: { id: userId } });
+        const userExist = await prisma.user.findUnique({ where: { id: userId } });
         if (!userExist) throw CustomError.badRequest('User not exist');
         if (!userExist.emailValidated) throw CustomError.badRequest('User not validated');
         if (userExist.id !== createAppointmentDto.userId) throw CustomError.badRequest('User not authorized');
 
-        const productExist = await prisma.product.findFirst({ where: { id: createAppointmentDto.productId } });
+        const productExist = await prisma.product.findUnique({ where: { id: createAppointmentDto.productId } });
         if (!productExist) throw CustomError.badRequest('Product not exist');
         if (!productExist.active) throw CustomError.badRequest('Product not active');
 
-        const scheduleExist = await prisma.schedule.findFirst({ where: { id: createAppointmentDto.scheduleId } });
+        const scheduleExist = await prisma.schedule.findUnique({ where: { id: createAppointmentDto.scheduleId } });
         if (!scheduleExist) throw CustomError.badRequest('Schedule not exist');
         if (!scheduleExist.is_available) throw CustomError.badRequest('Schedule not available');
 
@@ -238,39 +240,48 @@ export class AppointmentService {
     }
 
     public async acceptAppointment( userId: string, id: string ) {
-        const userExist = await prisma.user.findFirst({ where: { id } });
+        const userExist = await prisma.user.findUnique({ where: { id: userId } });
         if (!userExist) throw CustomError.badRequest('User not exist');
         if (!userExist.emailValidated) throw CustomError.badRequest('User not validated');
 
-        const appointmentExist = await prisma.appointment.findFirst({ where: { id } });
+        const appointmentExist = await prisma.appointment.findUnique({
+            where: { id },
+            include: {
+                user: true,
+                schedule: {
+                    include: {
+                        company: true,
+                    },
+                },
+            }
+        });
         if (!appointmentExist) throw CustomError.badRequest('Appointment not exist');
-        if (userExist.id !== appointmentExist.userId) throw CustomError.badRequest('User not authorized');
+        if (userExist.role !== 'admin' && userExist.id !== appointmentExist.schedule.company.userId) throw CustomError.badRequest('User not authorized');
 
         try {
-            appointmentExist.accepted = true;
+
             await prisma.appointment.update({
                 where: { id },
-                data: appointmentExist,
+                data: {
+                    accepted: true,
+                }
             });
-            
-            const user = await prisma.user.findFirst({ where: { id: appointmentExist.userId } });
-            if (!user) throw CustomError.badRequest('User not exist');
-            if (!user.emailValidated) throw CustomError.badRequest('User not validated');
 
-            this.sendEmailAppointmentAccepted(user.email);
+            this.sendEmailAppointmentAccepted(appointmentExist.user.email);
 
             return appointmentExist;
+
         } catch (error) {
             throw CustomError.internalServerError(`${ error }`);
         }
     }
 
     public async updateAppointment( userId: string, id: string, updateAppointmentDto: UpdateAppointmentDto ) {
-        const userExist = await prisma.user.findFirst({ where: { id } });
+        const userExist = await prisma.user.findUnique({ where: { id } });
         if (!userExist) throw CustomError.badRequest('User not exist');
         if (userExist.id !== updateAppointmentDto.userId) throw CustomError.badRequest('User not authorized');
 
-        const appointmentExist = await prisma.appointment.findFirst({ where: { id } });
+        const appointmentExist = await prisma.appointment.findUnique({ where: { id } });
         if (!appointmentExist) throw CustomError.badRequest('Appointment not exist');
         if (userExist.id !== appointmentExist.userId) throw CustomError.badRequest('User not authorized');
 

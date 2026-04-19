@@ -4,7 +4,7 @@ import { RegisterUserDto, LoginUserDto } from "../modules";
 import { CustomError } from "../errors/custom.error";
 import { ChangePasswordDto } from '../modules/auth/change-password.dto';
 import { UserEntity } from "../database/entities/User.entity";
-import { sendEmail } from "./sengrid.service";
+import { sendEmail } from './sengrid.service';
 
 
 export class AuthService {
@@ -12,7 +12,7 @@ export class AuthService {
     constructor() {}
 
     public async registerUser( registerUserDto: RegisterUserDto ) {
-        const userExist = await prisma.user.findFirst({ where: { email: registerUserDto.email } });
+        const userExist = await prisma.user.findUnique({ where: { email: registerUserDto.email } });
         if (userExist) throw CustomError.badRequest('User already exists');
 
         try{
@@ -50,7 +50,7 @@ export class AuthService {
 
     public async loginUser( loginUserDto: LoginUserDto ) {
 
-        const userExist = await prisma.user.findFirst({ where: { email: loginUserDto.email } });
+        const userExist = await prisma.user.findUnique({ where: { email: loginUserDto.email } });
         if (!userExist) throw CustomError.badRequest('Email not exist');
 
         const isMatch = comparePassword(loginUserDto.password, userExist.password);
@@ -68,7 +68,7 @@ export class AuthService {
     }
 
     public async recoverPassword( email: string ) {
-        const userExist = await prisma.user.findFirst({ where: { email } });
+        const userExist = await prisma.user.findUnique({ where: { email } });
         if (!userExist) throw CustomError.badRequest('User not exist');
 
         const token = await generateToken({id: userExist.id, email: userExist.email});
@@ -100,7 +100,7 @@ export class AuthService {
         const { email: emailPayload } = payload as { email: string };
         if (!emailPayload) throw CustomError.badRequest('Email not in token');
 
-        const userExist = await prisma.user.findFirst({ where: { email } });
+        const userExist = await prisma.user.findUnique({ where: { email } });
         if (!userExist) throw CustomError.badRequest('User not exist');
         if (!userExist.emailValidated) throw CustomError.badRequest('Email not validated');
         if (emailPayload !== userExist.email) throw CustomError.badRequest('Invalid email');
@@ -113,6 +113,8 @@ export class AuthService {
             data: userExist,
         });
 
+
+
         return true;
     }
 
@@ -123,7 +125,7 @@ export class AuthService {
         const { email } = payload as { email: string };
         if (!email) throw CustomError.badRequest('Email not in token');
 
-        const user = await prisma.user.findFirst({ where: { email } });
+        const user = await prisma.user.findUnique({ where: { email } });
         if (!user) throw CustomError.badRequest('Email not exist');
 
         // Enviar email de confirmación
@@ -176,4 +178,21 @@ export class AuthService {
         return true;
     }
 
+    public sendEmailPasswordChanged = async (email: string) => {
+        const subject = 'Password changed';
+        const htmlBody = `<h1>Password changed</h1>
+        <p>Your password has been changed</p>`;
+        const text = `Your password has been changed`;
+
+        const options = {
+            to: email,
+            subject,
+            htmlBody,
+            text,
+        }
+
+        sendEmail(options);
+
+        return true;
+    }
 }
