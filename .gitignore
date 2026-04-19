@@ -1,0 +1,117 @@
+# ========================
+# Variables de entorno
+# ========================
+.env
+.env.local
+.env.*.local
+.env.development
+.env.production
+.env.staging
+# Conservar solo la plantilla
+!.env.template
+
+# ========================
+# Dependencias
+# ========================
+node_modules/
+.npm
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.pnp.*
+
+# ========================
+# Build / Compilación
+# ========================
+dist/
+build/
+out/
+.tsbuildinfo
+*.tsbuildinfo
+
+# ========================
+# Logs
+# ========================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ========================
+# MongoDB local / Docker
+# ========================
+mongo/data/
+mongo/db/
+data/
+*.dump
+*.bson
+
+# ========================
+# Docker
+# ========================
+.dockerignore
+docker-compose.override.yml
+
+# ========================
+# Sistema operativo
+# ========================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverrideIcon
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+
+# ========================
+# IDEs y editores
+# ========================
+# VSCode
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json.example
+
+# JetBrains (WebStorm, IntelliJ)
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Vim / Emacs
+*.swp
+*.swo
+*~
+\#*\#
+
+# ========================
+# Testing
+# ========================
+coverage/
+.nyc_output/
+*.lcov
+jest_results/
+
+# ========================
+# Misceláneos
+# ========================
+*.pid
+*.seed
+*.pid.lock
+.cache/
+.parcel-cache/
+.eslintcache
+.stylelintcache
+*.tgz
+*.zip
