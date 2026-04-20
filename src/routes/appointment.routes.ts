@@ -1,20 +1,14 @@
 import { Router } from "express";
 import { adminMiddleware, authMiddleware } from "../middlewares";
-import { AppointmentService, EmailService } from "../services";
+import { AppointmentService } from "../services";
 import { AppointmentController } from "../controllers";
-import { envs } from "../configs";
 
 
 export class AppointmentRoutes {
     static get routes(): Router {
         const router = Router();
 
-        const emailService = new EmailService(
-            envs.MAILER_SERVICE,
-            envs.MAILER_EMAIL,
-            envs.MAILER_SECRET_KEY,
-        );
-        const appointmentService = new AppointmentService(emailService);
+        const appointmentService = new AppointmentService();
         const controller = new AppointmentController(appointmentService);
         
         
