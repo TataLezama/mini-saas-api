@@ -72,8 +72,14 @@ export class AppointmentService {
             const [total, appointments] = await Promise.all([
                 prisma.appointment.count(),
                 prisma.appointment.findMany({
-                    where: {
-                        
+                    include: {
+                        product: true,
+                        include: {
+                            company: true,
+                            where: {
+                                id: companyExist.id,
+                            }
+                        },
                     },
                     skip: (page - 1) * limit,
                     take: limit
@@ -88,6 +94,7 @@ export class AppointmentService {
                 previous: (page - 1 > 0) ? `/api/appointments?page=${ page - 1 }&limit=${ limit }` : null,
                 appointments: appointments,
             }
+            
         } catch (error) {
             throw CustomError.internalServerError(`${ error }`);
         }

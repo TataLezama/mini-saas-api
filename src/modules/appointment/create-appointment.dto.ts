@@ -12,7 +12,6 @@ export class CreateAppointmentDto {
     if (!scheduleId) return ['Missing schedule'];
     if (!productId) return ['Missing product'];
     if (!userId) return ['Missing user'];
-    if (!notes) return ['Missing notes'];
 
     return [undefined, new CreateAppointmentDto(productId, scheduleId, userId, notes)];
   }

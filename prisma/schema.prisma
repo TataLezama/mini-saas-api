@@ -90,7 +90,7 @@ model Schedule {
 
 model Appointment {
   id        String   @id @default(uuid())
-  notes     String
+  notes     String?
   paid      Boolean  @default(false)
   accepted  Boolean  @default(false)
   createdAt DateTime @default(now())
