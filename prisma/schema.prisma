@@ -13,6 +13,16 @@ enum Role {
   user
 }
 
+enum DayOfWeek {
+  monday
+  tuesday
+  wednesday
+  thursday
+  friday
+  saturday
+  sunday
+}
+
 model User {
   id             String    @id @default(uuid())
   name           String

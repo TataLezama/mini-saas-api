@@ -86,21 +86,21 @@ export class AppointmentController {
 
     getAppointmentsByUser = (req: Request, res: Response) => {
         const { page=1, limit=10 } = req.query;
-        const { userId } = req.params;
-        const { id: userId2 } = req.body.user;
+        const { userId: id } = req.params;
+        const { id: userId } = req.body.user;
 
         const [error, paginationDto ] = PaginationDto.create(+page, +limit);
         if (error) return res.status(400).json({ error });
 
         if ( !Validators.isUUID(userId) ) return res.status(400).json({ error: 'Invalid id' });
 
-        this.appoimentService.getAppointmentsByUser(userId, userId2, paginationDto! )
+        this.appoimentService.getAppointmentsByUser(id, userId, paginationDto! )
         .then(appointments => res.json(appointments))
         .catch(error => this.handleError(res, error));
     }
 
     createAppoiment = (req: Request, res: Response) => {
-        const { userId } = req.body.user;
+        const { id: userId } = req.body.user;
 
         const [error, createAppoimentDto] = CreateAppointmentDto.create(req.body);
         if (error) return res.status(400).json({ error });

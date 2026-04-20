@@ -2,14 +2,12 @@ import { prisma } from "../configs";
 import { AppointmentEntity } from "../database/entities/Appointment.entity";
 import { CustomError } from "../errors/custom.error";
 import { CreateAppointmentDto, PaginationDto, UpdateAppointmentDto } from "../modules";
-import { EmailService } from "./email.service";
+import { sendEmail } from "./sengrid.service";
 
 
 export class AppointmentService {
 
-    constructor(
-        private readonly emailService: EmailService,
-    ) {}
+    constructor() {}
 
     public async getAppointments(paginationDto: PaginationDto) {
         const { page, limit } = paginationDto;
@@ -218,6 +216,8 @@ export class AppointmentService {
         if (!scheduleExist) throw CustomError.badRequest('Schedule not exist');
         if (!scheduleExist.is_available) throw CustomError.badRequest('Schedule not available');
 
+        if (productExist.companyId !== scheduleExist.companyId) throw CustomError.badRequest('Product and schedule not belong to the same company');
+
         try {
             
             const appointment = await prisma.appointment.create({
@@ -228,11 +228,14 @@ export class AppointmentService {
                     userId: userExist.id,
                 }
             });
+
             await prisma.appointment.update({
                 where: { id: appointment.id },
                 data: appointment,
             });
+
             return appointment;
+
         } catch (error) {
             throw CustomError.internalServerError(`${ error }`);
         }
@@ -310,10 +313,10 @@ export class AppointmentService {
             to: email,
             subject: 'Appointment accepted',
             htmlBody,
+            text: 'Your appointment has been accepted',
         }
 
-        const isSet = await this.emailService.sendEmail(options);
-        if (!isSet) throw CustomError.internalServerError('Error sending email');
+        await sendEmail(options);
 
         return true;
     }
