@@ -73,17 +73,18 @@ export class ProductService {
 
     }
 
-    public async createProduct( id: string, createProductDto: CreateProductDto ) {        
+    public async createProduct( id: string, createProductDto: CreateProductDto ) {  
+        const { userId, ...dataDto } = createProductDto;
         const userExist = await prisma.user.findFirst({ where: { id } });
         if (!userExist) throw CustomError.badRequest('User not exist');
         if (!userExist.emailValidated) throw CustomError.badRequest('User not validated');
-        if (userExist.id !== createProductDto.userId) throw CustomError.badRequest('You are not authorized');
+        if (userExist.id !== userId) throw CustomError.badRequest('You are not authorized');
 
         const companyExist = ( userExist.role === 'admin')
-            ? await prisma.company.findFirst({ where: { id: createProductDto.companyId } })
+            ? await prisma.company.findFirst({ where: { id: dataDto.companyId } })
             : await prisma.company.findFirst({
                 where: {
-                    id: createProductDto.companyId,
+                    id: dataDto.companyId,
                     userId: userExist.id,
                 },
         });
@@ -93,7 +94,7 @@ export class ProductService {
         try {
             const product = await prisma.product.create({
                 data: {
-                    ...createProductDto,
+                    ...dataDto,
                     companyId: companyExist.id,
                 }
             });

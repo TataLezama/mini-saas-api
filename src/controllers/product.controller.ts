@@ -56,7 +56,7 @@ export class ProductController {
     }
 
     createProduct = (req: Request, res: Response) => {
-        const { id, email } = req.body.user;
+        const { id } = req.body.user;
 
         const [error, createProductDto] = CreateProductDto.create(req.body);
         if (error) return res.status(400).json({ error });
