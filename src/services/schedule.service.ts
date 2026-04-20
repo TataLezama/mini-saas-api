@@ -73,17 +73,18 @@ export class ScheduleService {
 
     }
 
-    public async createSchedule( id: string, createScheduleDto: CreateScheduleDto ) {        
+    public async createSchedule( id: string, createScheduleDto: CreateScheduleDto ) {
+        const { userId, ...dataDto } = createScheduleDto;
         const userExist = await prisma.user.findUnique({ where: { id } });
         if (!userExist) throw CustomError.badRequest('User not exist');
         if (!userExist.emailValidated) throw CustomError.badRequest('User not validated');
-        if (userExist.id !== createScheduleDto.userId) throw CustomError.badRequest('You are not authorized');
+        if (userExist.id !== userId) throw CustomError.badRequest('You are not authorized');
 
         const companyExist = ( userExist.role === 'admin')
-            ? await prisma.company.findUnique({ where: { id: createScheduleDto.companyId } })
+            ? await prisma.company.findUnique({ where: { id: dataDto.companyId } })
             : await prisma.company.findFirst({
                 where: {
-                    id: createScheduleDto.companyId,
+                    id: dataDto.companyId,
                     userId: userExist.id,
                 },
         });
@@ -93,7 +94,7 @@ export class ScheduleService {
         try {
             const schedule = await prisma.schedule.create({
                 data: {
-                    ...createScheduleDto,
+                    ...dataDto,
                     companyId: companyExist.id,
                 }
             });
